@@ -1,5 +1,7 @@
 # ByteBane 👁
-Experimental Malware To Destroy My Friends Computers 👹
+Experimental Malware To Destroy My Friends Computers 👹\
+The Purpose Of This Tiny-Malware Is To Flex My C Coding Abilities
+
 
 ## Technologies 💻
 1. C Programming Language

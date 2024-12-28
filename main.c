@@ -60,6 +60,7 @@ int encrypt_file(char * file_path, AES_KEY key){
     fclose(buffer);
 
     g_list_free(linked_list);
+    /*I'm a gentleman I won't delete your files, you wish I didn't*/
 
     return 0;
 }
