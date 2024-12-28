@@ -59,6 +59,8 @@ int encrypt_file(char * file_path, AES_KEY key){
     }
     fclose(buffer);
 
+    g_list_free(linked_list);
+
     return 0;
 }
 
