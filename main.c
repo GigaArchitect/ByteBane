@@ -36,7 +36,7 @@ int encrypt_file(char * file_path, AES_KEY key){
         int len = strlen(line);
         int padding = AES_BLOCK_SIZE - (len % AES_BLOCK_SIZE);
         line = realloc(line, len + padding);
-        memset(line + len, padding, padding);  // Fill all padding bytes with padding length
+        memset(line + len, padding, padding);  /* Fill all padding bytes with padding length */
         int blocks = len + padding;
         for(int i = 0; i < blocks; i+=16){
             AES_encrypt(line+i, line+i, &key);
